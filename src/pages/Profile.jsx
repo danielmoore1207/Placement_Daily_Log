@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { sendTestPush, subscribeToPush } from "../services/pushClient";
 
 export default function Profile({ user, onSignIn, onSignUp, onSignOut }) {
   const [email, setEmail] = useState("");
@@ -28,10 +29,44 @@ export default function Profile({ user, onSignIn, onSignUp, onSignOut }) {
   }
 
   if (user) {
+    async function handleEnableNotifications() {
+      setStatus("");
+      try {
+        await subscribeToPush();
+        setStatus("Notifications enabled for this device.");
+      } catch (error) {
+        setStatus(error.message || "Could not enable notifications.");
+      }
+    }
+
+    async function handleTestNotification() {
+      setStatus("");
+      try {
+        await sendTestPush();
+        setStatus("Test notification sent.");
+      } catch (error) {
+        setStatus(error.message || "Could not send test notification.");
+      }
+    }
+
     return (
       <section className="space-y-4">
         <h2 className="text-lg font-semibold text-slate-900">Profile</h2>
         <p className="rounded-lg border border-slate-200 bg-white p-3 text-sm text-slate-700">{user.email}</p>
+        <button
+          type="button"
+          onClick={handleEnableNotifications}
+          className="w-full rounded-lg bg-blue-700 px-4 py-3 text-sm font-semibold text-white"
+        >
+          Enable notifications on this device
+        </button>
+        <button
+          type="button"
+          onClick={handleTestNotification}
+          className="w-full rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white"
+        >
+          Send test notification
+        </button>
         <button
           type="button"
           onClick={onSignOut}
@@ -39,6 +74,7 @@ export default function Profile({ user, onSignIn, onSignUp, onSignOut }) {
         >
           Sign out
         </button>
+        {status ? <p className="text-sm text-slate-700">{status}</p> : null}
       </section>
     );
   }

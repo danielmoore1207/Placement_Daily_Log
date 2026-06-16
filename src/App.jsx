@@ -114,7 +114,7 @@ export default function App() {
         <Route path="/" element={<Dashboard user={user} logs={logs} />} />
         <Route
           path="/new-log"
-          element={user ? <NewLog onUpsertLog={upsertLog} /> : <Navigate to="/profile" replace />}
+          element={user ? <NewLog onUpsertLog={upsertLog} logs={logs} /> : <Navigate to="/profile" replace />}
         />
         <Route
           path="/history"

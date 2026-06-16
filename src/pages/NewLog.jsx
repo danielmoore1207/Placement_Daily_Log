@@ -2,7 +2,7 @@ import { useState } from "react";
 import DailyLogForm from "../components/DailyLogForm";
 import { requestPdfGeneration } from "../services/pdfClient";
 
-export default function NewLog({ onUpsertLog }) {
+export default function NewLog({ onUpsertLog, logs }) {
   const [submitting, setSubmitting] = useState(false);
   const [status, setStatus] = useState("");
   const [lastSaved, setLastSaved] = useState(null);
@@ -11,6 +11,14 @@ export default function NewLog({ onUpsertLog }) {
     setSubmitting(true);
     setStatus("");
     try {
+      const existing = logs.find((log) => log.log_date === payload.log_date);
+      if (existing) {
+        setStatus(
+          `An entry already exists for ${payload.log_date}. Use History if you want to review it.`
+        );
+        return;
+      }
+
       const saved = await onUpsertLog(payload);
       setLastSaved(saved);
       setStatus("Log saved. You can now generate the server PDF.");
@@ -33,7 +41,7 @@ export default function NewLog({ onUpsertLog }) {
     <section className="space-y-4">
       <h2 className="text-lg font-semibold text-slate-900">New Daily Log</h2>
       <p className="text-sm text-slate-600">
-        One entry is stored per date. Saving again for the same date updates that day.
+        One entry is allowed per date. If a date already has an entry, this form blocks another save.
       </p>
       <DailyLogForm onSubmit={handleSubmit} submitting={submitting} />
       <button

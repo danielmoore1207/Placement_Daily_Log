@@ -32,9 +32,16 @@ This repository now contains:
    - `VITE_SUPABASE_ANON_KEY`
    - `SUPABASE_URL`
    - `SUPABASE_SERVICE_ROLE_KEY`
+   - `SUPABASE_ANON_KEY`
+   - `VITE_VAPID_PUBLIC_KEY`
+   - `VAPID_PUBLIC_KEY`
+   - `VAPID_PRIVATE_KEY`
+   - `WEB_PUSH_SUBJECT` (for example `mailto:you@example.com`)
+   - `CRON_SECRET`
 
 4. Apply SQL migration in your Supabase project:
    - `supabase/migrations/20260616182000_create_daily_logs.sql`
+   - `supabase/migrations/20260616195000_create_push_subscriptions.sql`
 
 5. Create a Supabase storage bucket:
    - Bucket name: `daily-log-pdfs`
@@ -52,6 +59,7 @@ This repository now contains:
 - Create or update an entry in `New Log`.
 - Generate PDF for a saved entry (server endpoint).
 - Review monthly grouped history in `History`.
+- In `Profile`, enable notifications and send a test notification.
 
 PDF naming/path is enforced as:
 
@@ -97,6 +105,31 @@ PDF naming/path is enforced as:
    - Open PDF from history.
    - Confirm storage path is `monthly_logs/YYYY-MM/Daily_Log_(YYYY-MM-DD).pdf`.
    - Install on iPhone (Safari > Share > Add to Home Screen).
+   - Enable notifications in `Profile` and confirm test push arrives.
+
+## Push notifications
+
+The app now supports web push reminders for installed PWAs:
+
+- `Profile` includes:
+  - `Enable notifications on this device`
+  - `Send test notification`
+- Server endpoints:
+  - `POST /api/push-subscribe`
+  - `POST /api/push-test`
+  - `GET|POST /api/push-daily` (cron-triggered daily reminder)
+- Vercel cron in `vercel.json` runs weekdays at `17:00 UTC`.
+
+Generate VAPID keys once:
+
+```bash
+npx web-push generate-vapid-keys
+```
+
+Then store:
+
+- Public key in `VITE_VAPID_PUBLIC_KEY` and `VAPID_PUBLIC_KEY`
+- Private key in `VAPID_PRIVATE_KEY`
 
 ## Legacy Python fallback
 

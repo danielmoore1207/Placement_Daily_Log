@@ -1,23 +1,5 @@
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
-import { createClient } from "@supabase/supabase-js";
-
-function getServiceClient() {
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) {
-    throw new Error("Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY.");
-  }
-  return createClient(url, key);
-}
-
-function getAnonClient() {
-  const url = process.env.SUPABASE_URL;
-  const anon = process.env.SUPABASE_ANON_KEY;
-  if (!url || !anon) {
-    throw new Error("Missing SUPABASE_URL or SUPABASE_ANON_KEY.");
-  }
-  return createClient(url, anon);
-}
+import { getServiceClient, getUserFromAuthHeader } from "./_supabaseAuth";
 
 function drawWrappedText(page, font, text, x, y, maxWidth, lineHeight, size = 11) {
   const words = (text || "").split(/\s+/).filter(Boolean);
@@ -116,23 +98,8 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Missing logId." });
     }
 
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.toLowerCase().startsWith("bearer ")) {
-      return res.status(401).json({ error: "Missing bearer token." });
-    }
-    const accessToken = authHeader.slice("Bearer ".length).trim();
-    if (!accessToken) {
-      return res.status(401).json({ error: "Missing bearer token." });
-    }
-
-    const authClient = getAnonClient();
-    const {
-      data: { user },
-      error: userError
-    } = await authClient.auth.getUser(accessToken);
-    if (userError || !user) {
-      return res.status(401).json({ error: "Invalid session token." });
-    }
+    const { error: authError, user } = await getUserFromAuthHeader(req);
+    if (authError || !user) return res.status(401).json({ error: authError || "Unauthorized." });
 
     const supabase = getServiceClient();
     const { data: log, error: logError } = await supabase
