@@ -5,7 +5,19 @@ import { registerSW } from "virtual:pwa-register";
 import App from "./App";
 import "./index.css";
 
-registerSW({ immediate: true });
+const updateSW = registerSW({
+  immediate: true,
+  onNeedRefresh() {
+    updateSW(true);
+  },
+  onRegisteredSW(_swUrl, registration) {
+    if (!registration) return;
+    // Poll for updates so installed PWAs refresh faster.
+    setInterval(() => {
+      registration.update();
+    }, 60 * 1000);
+  }
+});
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
