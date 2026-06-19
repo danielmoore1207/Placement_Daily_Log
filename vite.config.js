@@ -3,6 +3,14 @@ import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig({
+  server: {
+    proxy: {
+      "/api": {
+        target: "http://localhost:3000",
+        changeOrigin: true
+      }
+    }
+  },
   plugins: [
     react(),
     VitePWA({
@@ -14,9 +22,9 @@ export default defineConfig({
       manifest: {
         name: "Placement Daily Log",
         short_name: "PlacementLog",
-        description: "Track placement work daily and export review-ready PDFs.",
-        theme_color: "#0f172a",
-        background_color: "#f8fafc",
+        description: "Track placement work daily and pull any day instantly.",
+        theme_color: "#09090b",
+        background_color: "#09090b",
         display: "standalone",
         scope: "/",
         start_url: "/",

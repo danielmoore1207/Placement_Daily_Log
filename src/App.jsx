@@ -3,9 +3,9 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import Layout from "./components/Layout";
 import Dashboard from "./pages/Dashboard";
 import NewLog from "./pages/NewLog";
+import PullLog from "./pages/PullLog";
 import History from "./pages/History";
 import Profile from "./pages/Profile";
-import { getSignedPdfUrl, requestPdfGeneration } from "./services/pdfClient";
 import { isSupabaseConfigured, supabase } from "./utils/supabase";
 
 export default function App() {
@@ -75,17 +75,6 @@ export default function App() {
     return data;
   }
 
-  async function handleGeneratePdf(logId) {
-    const result = await requestPdfGeneration(logId);
-    setLogs((prev) => prev.map((log) => (log.id === logId ? { ...log, pdf_path: result.pdfPath } : log)));
-    return result;
-  }
-
-  async function handleOpenPdf(path) {
-    const url = await getSignedPdfUrl(path);
-    window.open(url, "_blank", "noopener,noreferrer");
-  }
-
   async function handleSignIn(email, password) {
     if (!supabase) throw new Error("Supabase not configured.");
     const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -107,24 +96,32 @@ export default function App() {
   return (
     <Layout>
       {configError ? (
-        <div className="mb-4 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">{configError}</div>
+        <div className="mb-4 rounded-lg border border-white/25 bg-white/10 p-3 text-sm text-zinc-100">
+          {configError}
+        </div>
       ) : null}
 
       <Routes>
         <Route path="/" element={<Dashboard user={user} logs={logs} />} />
         <Route
           path="/new-log"
-          element={user ? <NewLog onUpsertLog={upsertLog} logs={logs} /> : <Navigate to="/profile" replace />}
-        />
-        <Route
-          path="/history"
           element={
             user ? (
-              <History logs={logs} onGeneratePdf={handleGeneratePdf} onOpenPdf={handleOpenPdf} />
+              <NewLog onUpsertLog={upsertLog} logs={logs} />
             ) : (
               <Navigate to="/profile" replace />
             )
           }
+        />
+        <Route
+          path="/history"
+          element={
+            user ? <History logs={logs} /> : <Navigate to="/profile" replace />
+          }
+        />
+        <Route
+          path="/pull-log"
+          element={user ? <PullLog logs={logs} /> : <Navigate to="/profile" replace />}
         />
         <Route
           path="/profile"

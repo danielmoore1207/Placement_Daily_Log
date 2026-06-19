@@ -3,7 +3,7 @@
 This repository now contains:
 
 - A legacy Python CLI logger (`daily_log.py`) you can still run locally.
-- A new React + Vite PWA for iPhone/desktop use with Supabase sync and server-generated PDFs.
+- A new React + Vite PWA for iPhone/desktop use with Supabase sync and fast day-by-day retrieval.
 
 ## PWA stack
 
@@ -11,7 +11,7 @@ This repository now contains:
 - Tailwind CSS
 - `vite-plugin-pwa` (installable app + service worker)
 - Supabase Auth + Postgres + Storage
-- Vercel deployment + serverless PDF endpoint
+- Vercel deployment + optional serverless push endpoints
 
 ## Setup (PWA)
 
@@ -43,27 +43,22 @@ This repository now contains:
    - `supabase/migrations/20260616182000_create_daily_logs.sql`
    - `supabase/migrations/20260616195000_create_push_subscriptions.sql`
 
-5. Create a Supabase storage bucket:
-   - Bucket name: `daily-log-pdfs`
-   - Access: private
-
 6. Run the app:
 
    ```bash
    npm run dev
    ```
 
+   This starts both Vite and local Vercel API routes for full app behavior in development.
+   If prompted on first run, complete `vercel login` once so local `/api/*` routes can run.
+
 ## Usage (PWA)
 
 - Sign up/sign in in the `Profile` tab.
 - Create or update an entry in `New Log`.
-- Generate PDF for a saved entry (server endpoint).
+- Pull any saved day instantly in the `Pull Log` tab.
 - Review monthly grouped history in `History`.
 - In `Profile`, enable notifications and send a test notification.
-
-PDF naming/path is enforced as:
-
-- `monthly_logs/YYYY-MM/Daily_Log_(YYYY-MM-DD).pdf`
 
 ## Deploy (Vercel + GitHub)
 
@@ -78,7 +73,6 @@ PDF naming/path is enforced as:
 1. In Supabase:
    - Create project.
    - Run SQL in `supabase/migrations/20260616182000_create_daily_logs.sql`.
-   - Create private storage bucket `daily-log-pdfs`.
    - In Auth settings, enable email/password sign-in.
 2. In local project:
    - `copy .env.example .env`
@@ -96,14 +90,12 @@ PDF naming/path is enforced as:
      - `VITE_SUPABASE_ANON_KEY`
      - `SUPABASE_URL`
      - `SUPABASE_SERVICE_ROLE_KEY`
-     - `SUPABASE_ANON_KEY` (required by secure PDF endpoint auth verification)
+     - `SUPABASE_ANON_KEY`
    - Deploy.
 5. Post-deploy smoke test:
    - Sign up and sign in.
    - Create today’s log.
-   - Generate PDF.
-   - Open PDF from history.
-   - Confirm storage path is `monthly_logs/YYYY-MM/Daily_Log_(YYYY-MM-DD).pdf`.
+   - Pull a known existing date in `Pull Log`.
    - Install on iPhone (Safari > Share > Add to Home Screen).
    - Enable notifications in `Profile` and confirm test push arrives.
 
@@ -131,9 +123,3 @@ Then store:
 - Public key in `VITE_VAPID_PUBLIC_KEY` and `VAPID_PUBLIC_KEY`
 - Private key in `VAPID_PRIVATE_KEY`
 
-## Legacy Python fallback
-
-If you still want local-only logging, you can continue using:
-
-- `python daily_log.py`
-- `new_daily_log.bat`

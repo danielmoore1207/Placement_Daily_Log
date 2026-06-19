@@ -16,7 +16,6 @@ create table if not exists public.daily_logs (
   communication smallint not null check (communication between 1 and 5),
   problem_solving smallint not null check (problem_solving between 1 and 5),
   wellbeing smallint not null check (wellbeing between 1 and 5),
-  pdf_path text,
   created_at timestamptz not null default timezone('utc', now()),
   updated_at timestamptz not null default timezone('utc', now()),
   constraint daily_logs_user_date_unique unique (user_id, log_date)
