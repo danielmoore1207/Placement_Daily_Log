@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { jsPDF } from "jspdf";
 import { formatDisplayDate, todayIsoDate } from "../utils/date";
 
 const sections = [
@@ -26,6 +27,45 @@ function renderSectionValue(log, key) {
   }
   const value = String(log[key] || "").trim();
   return value || "No details recorded.";
+}
+
+function exportLogAsPdf(log) {
+  if (!log) return;
+
+  const doc = new jsPDF({ unit: "pt", format: "a4" });
+  const margin = 48;
+  const width = doc.internal.pageSize.getWidth() - margin * 2;
+  const pageHeight = doc.internal.pageSize.getHeight();
+  let y = margin;
+
+  const addWrappedText = (text, fontSize = 11, lineHeight = 16) => {
+    doc.setFontSize(fontSize);
+    const lines = doc.splitTextToSize(String(text || ""), width);
+    for (const line of lines) {
+      if (y > pageHeight - margin) {
+        doc.addPage();
+        y = margin;
+      }
+      doc.text(line, margin, y);
+      y += lineHeight;
+    }
+  };
+
+  doc.setFont("helvetica", "bold");
+  addWrappedText(`Placement Daily Log - ${formatDisplayDate(log.log_date)}`, 16, 22);
+  doc.setFont("helvetica", "normal");
+  addWrappedText(ratingSummary(log), 10, 14);
+  y += 8;
+
+  sections.forEach((section) => {
+    doc.setFont("helvetica", "bold");
+    addWrappedText(section.title, 12, 18);
+    doc.setFont("helvetica", "normal");
+    addWrappedText(renderSectionValue(log, section.key), 11, 16);
+    y += 8;
+  });
+
+  doc.save(`placement-log-${log.log_date}.pdf`);
 }
 
 export default function PullLog({ logs }) {
@@ -61,10 +101,21 @@ export default function PullLog({ logs }) {
       ) : (
         <article className="space-y-3 rounded-xl border border-white/20 bg-black/40 p-4">
           <div className="border-b border-white/15 pb-3">
-            <h3 className="font-display text-base font-semibold text-zinc-100">
-              {formatDisplayDate(selectedLog.log_date)}
-            </h3>
-            <p className="mt-1 text-xs text-zinc-400">{ratingSummary(selectedLog)}</p>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h3 className="font-display text-base font-semibold text-zinc-100">
+                  {formatDisplayDate(selectedLog.log_date)}
+                </h3>
+                <p className="mt-1 text-xs text-zinc-400">{ratingSummary(selectedLog)}</p>
+              </div>
+              <button
+                type="button"
+                className="rounded-lg border border-white/25 bg-zinc-800 px-3 py-1.5 text-xs font-medium text-zinc-100 transition hover:bg-zinc-700"
+                onClick={() => exportLogAsPdf(selectedLog)}
+              >
+                Download PDF
+              </button>
+            </div>
           </div>
 
           {sections.map((section) => (

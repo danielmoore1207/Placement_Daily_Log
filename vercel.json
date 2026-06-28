@@ -1,10 +1,4 @@
 {
-  "crons": [
-    {
-      "path": "/api/push-daily",
-      "schedule": "0 17 * * 1-5"
-    }
-  ],
   "headers": [
     {
       "source": "/sw.js",
@@ -25,14 +19,13 @@
       ]
     }
   ],
-  "rewrites": [
+  "routes": [
     {
-      "source": "/api/(.*)",
-      "destination": "/api/$1"
+      "handle": "filesystem"
     },
     {
-      "source": "/((?!api/).*)",
-      "destination": "/index.html"
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }

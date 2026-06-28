@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { sendTestPush, subscribeToPush } from "../services/pushClient";
 
 export default function Profile({ user, onSignIn, onSignUp, onSignOut }) {
   const [email, setEmail] = useState("");
@@ -29,44 +28,10 @@ export default function Profile({ user, onSignIn, onSignUp, onSignOut }) {
   }
 
   if (user) {
-    async function handleEnableNotifications() {
-      setStatus("");
-      try {
-        await subscribeToPush();
-        setStatus("Notifications enabled for this device.");
-      } catch (error) {
-        setStatus(error.message || "Could not enable notifications.");
-      }
-    }
-
-    async function handleTestNotification() {
-      setStatus("");
-      try {
-        await sendTestPush();
-        setStatus("Test notification sent.");
-      } catch (error) {
-        setStatus(error.message || "Could not send test notification.");
-      }
-    }
-
     return (
       <section className="space-y-4">
         <h2 className="font-display text-xl font-semibold text-white">Profile</h2>
         <p className="rounded-lg border border-white/20 bg-black/40 p-3 text-sm text-zinc-100">{user.email}</p>
-        <button
-          type="button"
-          onClick={handleEnableNotifications}
-          className="w-full rounded-lg border border-white bg-white px-4 py-3 text-sm font-semibold text-black transition hover:bg-zinc-200"
-        >
-          Enable notifications on this device
-        </button>
-        <button
-          type="button"
-          onClick={handleTestNotification}
-          className="w-full rounded-lg border border-white/25 bg-zinc-900 px-4 py-3 text-sm font-semibold text-zinc-100 transition hover:bg-zinc-800"
-        >
-          Send test notification
-        </button>
         <button
           type="button"
           onClick={onSignOut}

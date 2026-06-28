@@ -21,7 +21,12 @@ const emptyState = {
 const requiredFields = ["projects", "tasks_completed", "outcomes", "learnings", "next_steps", "reflection"];
 
 export default function DailyLogForm({ initialValue, onSubmit, submitting }) {
-  const [form, setForm] = useState(initialValue || getDraft() || emptyState);
+  const [form, setForm] = useState(() => {
+    const today = todayIsoDate();
+    if (initialValue) return { ...emptyState, ...initialValue };
+    const draft = getDraft();
+    return { ...emptyState, ...draft, log_date: today };
+  });
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -57,7 +62,7 @@ export default function DailyLogForm({ initialValue, onSubmit, submitting }) {
     try {
       await onSubmit(payload);
       clearDraft();
-      setForm((prev) => ({ ...emptyState, log_date: prev.log_date }));
+      setForm({ ...emptyState, log_date: todayIsoDate() });
     } catch (submitError) {
       setError(submitError.message || "Could not save log.");
     }
